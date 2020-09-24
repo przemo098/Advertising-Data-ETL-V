@@ -1,6 +1,11 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import './App.css';
-import {LineChart, Line, XAxis, YAxis} from 'recharts';
+import {LineChart, Line, XAxis, YAxis, Legend, Tooltip, CartesianGrid} from 'recharts';
+import {initialize, listCampaignsUnique, listData, listDataSourcesUnique} from "./DataLoaderService";
+import styled from 'styled-components';
+import {Filters} from "./Filter";
+import {connect, Provider} from "react-redux";
+import {RootStateType} from "./index";
 
 const rand = 300;
 const data: Array<any> = [];
@@ -13,30 +18,83 @@ for (let i = 0; i < 7; i++) {
     data.push(d);
 }
 
-function App() {
+const Content = styled.div`
+  height: 100vh;
+  display: table;
+  width: 100%;
+`
+
+const BodySection = styled.section`
+  flex-wrap: wrap;
+  margin-top: 50px;
+  display: flex;
+  flex-direction: row;
+  top: 0;
+  bottom: 0;
+`
+
+const Chart = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+  align-items: center;
+  flex-grow: 1
+`
+
+function App(props: IAppProps) {
+    const [campaigns, setCampaigns] = useState<string[]>([]);
+    const [dataSources, setDataSources] = useState<Array<string>>([]);
+    useEffect(() => {
+        initialize().then(x => {
+
+            debugger;
+            setCampaigns(listCampaignsUnique());
+            setDataSources(listDataSourcesUnique());
+        })
+    }, []);
   return (
-    <div className="App">
-      <header className="App-header">
+    <Content>
+        <header className="App-header">
         <p>
           Advertising Data ETL-V
         </p>
       </header>
-        <div >
-            <LineChart
-                width={500}
-                height={300}
-                data={data}
-                margin={{ top: 5, right: 20, bottom: 5, left: 0 }}
-            >
-                <Line type="monotone" dataKey="value" stroke="#8884d8" dot={false} />
-                <XAxis dataKey="year" />
-                <YAxis />
-            </LineChart>
-        </div>
-    </div>
+        <BodySection>
+            <Filters allCampaigns={campaigns} allDataSources={dataSources} />
+            <Chart >
+                <LineChart
+                    width={1000}
+                    height={600}
+                    data={listData(null as any)}
+                    margin={{
+                        top: 5, right: 30, left: 20, bottom: 5,
+                    }}
+                >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="Date" />
+                    <YAxis yAxisId="left" domain={[0, 120000]} />
+                    <YAxis yAxisId="right" orientation="right" domain={[0, 120000]}/>
+                    <Tooltip />
+                    <Legend />
+                    <Line yAxisId="left" type="monotone" dataKey="Clicks" stroke="#8884d8" activeDot={{ r: 8 }} />
+                    <Line yAxisId="right" type="monotone" dataKey="Impressions" stroke="#82ca9d" />
+                </LineChart>
+            </Chart>
+        </BodySection>
+    </Content>
   );
 }
 
+type IAppProps = {
+    selectedCampaigns: string[];
+    selectedDataSources: string[];
+};
 
+const mapStateToProps = (state: RootStateType) => ({
+    selectedCampaigns: state.chart.selectedCampaigns,
+    selectedDataSources: state.chart.selectedDataSources,
+})
 
-export default App;
+export default connect(
+    mapStateToProps
+)(App);
