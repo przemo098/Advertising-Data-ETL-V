@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import './App.css';
 import {LineChart, Line, XAxis, YAxis, Legend, Tooltip, CartesianGrid} from 'recharts';
-import {initialize, listCampaignsUnique, listData, listDataSourcesUnique} from "./DataLoaderService";
+import {IDataFilter, initialize, listCampaignsUnique, displayDataInfo, listDataSourcesUnique} from "./DataLoaderService";
 import styled from 'styled-components';
 import {Filters} from "./Filter";
 import {connect, Provider} from "react-redux";
@@ -46,12 +46,16 @@ function App(props: IAppProps) {
     const [dataSources, setDataSources] = useState<Array<string>>([]);
     useEffect(() => {
         initialize().then(x => {
-
-            debugger;
             setCampaigns(listCampaignsUnique());
             setDataSources(listDataSourcesUnique());
         })
     }, []);
+
+    const filter: IDataFilter = {
+        campaigns: props.selectedCampaigns,
+        dataSources: props.selectedDataSources
+    }
+    const displayData = displayDataInfo(filter);
   return (
     <Content>
         <header className="App-header">
@@ -65,15 +69,15 @@ function App(props: IAppProps) {
                 <LineChart
                     width={1000}
                     height={600}
-                    data={listData(null as any)}
+                    data={displayData.data}
                     margin={{
                         top: 5, right: 30, left: 20, bottom: 5,
                     }}
                 >
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="Date" />
-                    <YAxis yAxisId="left" domain={[0, 120000]} />
-                    <YAxis yAxisId="right" orientation="right" domain={[0, 120000]}/>
+                    <YAxis yAxisId="left" domain={[0, displayData.maxClicksValue]} />
+                    <YAxis yAxisId="right" orientation="right" domain={[0, displayData.maxImpressionValue]}/>
                     <Tooltip />
                     <Legend />
                     <Line yAxisId="left" type="monotone" dataKey="Clicks" stroke="#8884d8" activeDot={{ r: 8 }} />

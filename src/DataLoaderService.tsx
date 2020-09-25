@@ -22,14 +22,8 @@ export function listDataSourcesUnique(){
 
 export function initialize(){
    return fetchCsv().then((x => {
-
-
        return data = JSON.parse(csvJSON(x));
    }));
-}
-
-function loadMetadata(){
-
 }
 
 function fetchCsv() {
@@ -49,12 +43,41 @@ export interface IDataFilter{
     campaigns: string[];
 }
 
-export function listData(filter: IDataFilter){
-    const toShow = filter ? data : data?.splice(0, 100);
-    if(!toShow || toShow.length === 0)
-        return [];
-    return toShow;
+export interface IChartData{
+    data: IData[];
+    maxClicksValue: number;
+    maxImpressionValue: number;
 }
+
+export function displayDataInfo(filter: IDataFilter){
+    const dataToShow: IChartData = {
+        data: [],
+        maxClicksValue: 0,
+        maxImpressionValue: 0
+    }
+
+    if(!data || data.length === 0)
+        return dataToShow;
+
+    data.forEach(x => {
+        if(shouldBeDisplayed(filter, x)){
+            if(dataToShow.maxImpressionValue < x.Impressions)
+                dataToShow.maxImpressionValue = x.Impressions
+            if(dataToShow.maxClicksValue < x.Clicks)
+                dataToShow.maxClicksValue = x.Clicks
+            dataToShow.data.push(x);
+        }
+    })
+    return dataToShow;
+}
+
+function shouldBeDisplayed (filter: IDataFilter, element: IData){
+    if(filter.dataSources.length === 0 || filter.dataSources.includes(element.Datasource))
+        if(filter.campaigns.length === 0 || filter.campaigns.includes(element.Campaign))
+            return true;
+    return false;
+}
+
 
 function csvJSON(csv){
 
@@ -68,6 +91,10 @@ function csvJSON(csv){
         const currentline=lines[i].split(",");
 
         for(let j=0;j<headers.length;j++){
+            if(j === 3 || j === 4){
+                obj[headers[j]] = parseInt(currentline[j]);
+                continue;
+            }
             obj[headers[j]] = currentline[j];
         }
 

@@ -2,7 +2,7 @@ import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 import {IData} from "../DataLoaderService";
 
 export const ChartState: IState = {
-    selectedDataSources: ['dasd'],
+    selectedDataSources: [],
     selectedCampaigns: [],
     filteredItems: [],
 };
