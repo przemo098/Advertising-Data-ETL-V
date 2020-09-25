@@ -4,8 +4,9 @@ import {LineChart, Line, XAxis, YAxis, Legend, Tooltip, CartesianGrid} from 'rec
 import {IDataFilter, initialize, listCampaignsUnique, displayDataInfo, listDataSourcesUnique} from "./DataLoaderService";
 import styled from 'styled-components';
 import {Filters} from "./Filter";
-import {connect, Provider} from "react-redux";
-import {RootStateType} from "./index";
+import {connect, useDispatch} from "react-redux";
+import {RootStateType, store} from "./index";
+import {toggleBusyAction} from './app/busyIndicator/busyIndicatorReducer'
 
 const rand = 300;
 const data: Array<any> = [];
@@ -44,10 +45,13 @@ const Chart = styled.div`
 function App(props: IAppProps) {
     const [campaigns, setCampaigns] = useState<string[]>([]);
     const [dataSources, setDataSources] = useState<Array<string>>([]);
+    let dispatch = useDispatch();
     useEffect(() => {
+        dispatch(toggleBusyAction())
         initialize().then(x => {
             setCampaigns(listCampaignsUnique());
             setDataSources(listDataSourcesUnique());
+            dispatch(toggleBusyAction())
         })
     }, []);
 
@@ -92,6 +96,7 @@ function App(props: IAppProps) {
 type IAppProps = {
     selectedCampaigns: string[];
     selectedDataSources: string[];
+    toggleBusyAction
 };
 
 const mapStateToProps = (state: RootStateType) => ({
@@ -99,6 +104,11 @@ const mapStateToProps = (state: RootStateType) => ({
     selectedDataSources: state.chart.selectedDataSources,
 })
 
+const dispatchProps = {
+    toggleBusyAction
+}
+
 export default connect(
-    mapStateToProps
+    mapStateToProps,
+    dispatchProps
 )(App);

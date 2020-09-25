@@ -7,9 +7,10 @@ import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import Chip from '@material-ui/core/Chip';
 import styled from 'styled-components';
-import { connect } from 'react-redux';
+import {connect, useDispatch} from 'react-redux';
 import {setSelectedDataSourcesAction, setSelectedCampaignsAction} from './app/filterReducer';
 import {RootStateType} from "./index";
+import {toggleBusyAction} from "./app/busyIndicator/busyIndicatorReducer";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -62,9 +63,12 @@ function Filter(props: {items: string[], label: string, onChange: (aa:any) => vo
     const classes = useStyles();
     const theme = useTheme();
     const [selectedItems, setSelectedItems] = React.useState<string[]>([]);
+    const dispatch = useDispatch();
     const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+        dispatch(toggleBusyAction())
         setSelectedItems(event.target.value as string[]);
         props.onChange(event.target.value as string[]);
+        dispatch(toggleBusyAction())
     };
     return <FormControl className={classes.formControl}>
         <InputLabel id="demo-mutiple-chip-label">{props.label}</InputLabel>

@@ -8,14 +8,17 @@ import {configureStore} from "@reduxjs/toolkit";
 import {addTodoReducer} from "./app/reducers";
 import { combineReducers } from 'redux'
 import {chartReducer} from "./app/filterReducer";
+import BusyIndicator from "./app/busyIndicator/BusyIndicator";
+import {busyIndicatorReducer} from "./app/busyIndicator/busyIndicatorReducer";
 
 
 const rootReducer = combineReducers({
     todos: addTodoReducer,
-    chart: chartReducer
+    chart: chartReducer,
+    busyIndicator: busyIndicatorReducer
 })
 
-const store = configureStore({
+export const store = configureStore({
     reducer: rootReducer
 })
 
@@ -23,6 +26,7 @@ export type RootStateType = ReturnType<typeof rootReducer>
 
 ReactDOM.render(
     <Provider store={store}>
+        <BusyIndicator/>
         <App  />
     </Provider>,
   document.getElementById('root')
